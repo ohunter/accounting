@@ -1,0 +1,38 @@
+organization:
+  name: Hoffstuen Konsultering
+  address:
+    street: Badstuveien 6
+    area: 1385 Asker
+    country: Norge
+  contact:
+    email: Hoffkonsult@gmail.com
+    phone: (0047) 46668334
+
+customer:
+  name:
+  co:
+  address:
+    street:
+    area:
+    country:
+
+invoice:
+  id:
+  expiry_offset:
+  payment_account:
+  hours:
+    - date:
+      description:
+      duration:
+      per_hour:
+  driving:
+    - date:
+      start:
+      end:
+      kilometers:
+      per_kilometer:
+  purchased:
+    - date:
+      description:
+      num_items:
+      per_item:

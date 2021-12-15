@@ -1,0 +1,50 @@
+\documentclass{Faktura_new}
+
+\usepackage[norsk]{babel}
+
+\begin{document}
+
+\Header
+{Hoffstuen Konsultering}% Firma Navn
+{917 513 279}           % Organisasjons Nummer
+{Badstuveien 6}         % Firma Addresse
+{1385 Asker}            % Firma Poststed
+{Norge}                 % Firma Land
+{(0047) 46668334}       % Firma Telefon
+{Hoffkonsult@gmail.com} % Firma Epost
+
+\medskip
+
+\Customer
+{Bente Haugsnes}	% Klient Navn
+{Janne Røising}     	% Verge Navn
+{Vesleveien 10b}    	% Verge Addresse
+{1365 Blommenholm}  	% Verge Poststed
+{10}                	% Antall Forfalls Dager
+{95}                	% Faktura Nummer
+{1208.78.96569}     	% Konto Nummer
+
+\begin{TotalOversikt}
+	\NewTimedEntry{Arbeidstimer}{3}{00}{Timer}{900}
+	\NewEntry{Kilometergodtgjørelse}{43.2}{Kilometer}{174.12}
+	\SumEntries{1074.12}
+\end{TotalOversikt}
+
+\begin{Timeliste}
+	\NewEntry{10/9/2020}{Besøkstjeneste}{1}{00}{300}
+	\NewEntry{9/10/2020}{Besøkstjeneste}{1}{00}{300}
+	\NewEntry{5/11/2020}{Besøkstjeneste}{1}{00}{300}
+	\SumEntries{900}
+\end{Timeliste}
+
+\begin{Kjøreliste}
+	\NewEntry{10/9/2020}{Vesleveien 10b}{Fredheimlia 44}{7.2}{4.03}
+	\NewEntry{10/9/2020}{Fredheimlia 44}{Vesleveien 10b}{7.2}{4.03}
+	\NewEntry{9/10/2020}{Vesleveien 10b}{Fredheimlia 44}{7.2}{4.03}
+	\NewEntry{9/10/2020}{Fredheimlia 44}{Vesleveien 10b}{7.2}{4.03}
+	\NewEntry{5/11/2020}{Vesleveien 10b}{Fredheimlia 44}{7.2}{4.03}
+	\NewEntry{5/11/2020}{Fredheimlia 44}{Vesleveien 10b}{7.2}{4.03}
+	\SumEntries{174.12}
+\end{Kjøreliste}
+
+\end{document}
