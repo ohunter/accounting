@@ -1,0 +1,8 @@
+*.aux
+*.log
+*.pdf
+*.tex
+**/*.pyc
+examples/**/*.yaml
+
+!examples/base.yaml

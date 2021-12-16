@@ -1,0 +1,117 @@
+\documentclass[a4paper]{article}
+
+\usepackage[margin=0.5in]{geometry}
+\usepackage{tabularx}
+
+\usepackage[default]{lato}
+\usepackage[T1]{fontenc}
+
+% \usepackage[norsk]{babel}
+
+
+\begin{document}
+
+\centering \Huge \textbf{\VAR{ organization.name }}\\
+\smallskip
+\centering \normalsize Organisasjonsnummer: \VAR{ organization.id }\\
+\medskip
+\begin{tabularx}{\linewidth}{Xr}
+  \hline \\
+  \VAR{ organization.address.street } & \VAR{ organization.contact_info.phone } \\
+  \VAR{ organization.address.area }   & \VAR{ organization.contact_info.email } \\
+  \VAR{ organization.address.country }& \\
+\end{tabularx}
+
+\medskip
+
+\begin{tabularx}{\linewidth}{rXrl}
+  Kunde:  & \VAR{ customer.name }                & Dato:         & \VAR{ invoice.date } \\
+          & V/ \VAR{ customer.co }               & Forfallsdato: & \VAR{ invoice.date + invoice.expiry_offset } \\
+          & \VAR{ customer.address.street }      & Faktura:      & \VAR{ invoice.id } \\
+          & \VAR{ organization.address.area }    & Konto:        & \VAR{ invoice.payment_account } \\
+          & \VAR{ organization.address.country } \\
+\end{tabularx}
+
+\centering \LARGE \textbf{Oversikt}\\
+\medskip
+\normalsize
+\begin{tabularx}{\linewidth}{|lrXl|r|}
+  \hline
+  \textbf{Beskrivelse}&
+  \multicolumn{3}{l}{\textbf{Mengde}}&
+  \multicolumn{1}{c|}{\textbf{Beløp}}\\
+\BLOCK{ for entry in invoice.summaries }
+\BLOCK{   if entry.type == "HOUR" }
+  \hline \VAR{ entry.description } & \VAR{ entry.quantity | fmt_duration } & \VAR{ entry.unit } && \VAR{ entry.total | fmt_float } kr\\
+\BLOCK{   elif entry.type == "DRIVE" }
+  \hline \VAR{ entry.description } & \VAR{ entry.quantity | fmt_float } & \VAR{ entry.unit } && \VAR{ entry.total | fmt_float } kr\\
+\BLOCK{   elif entry.type == "EXPENSE" }
+\BLOCK{   endif }
+\BLOCK{ endfor }
+  \hline
+  \multicolumn{3}{c|}{} & Total:  & \VAR{ invoice.total | fmt_float } kr\\
+  \cline{4-5}
+\end{tabularx}
+
+\BLOCK{ if invoice.hours }
+\centering \LARGE \textbf{Timeliste}\\
+\medskip
+\normalsize
+\begin{tabularx}{\linewidth}{|lXlrl|r|}
+  \hline
+  \textbf{Dato}&
+  \textbf{Beskrivelse}&
+  \textbf{Tid}&
+  \multicolumn{1}{c}{\textbf{À}}&&
+  \multicolumn{1}{c|}{\textbf{Beløp}}\\
+\BLOCK{ for entry in invoice.hours }
+  \hline \VAR{ entry.date } & \VAR{ entry.description } & \VAR{ entry.duration | fmt_duration } & \VAR{ entry.per_hour | fmt_float } kr && \VAR{ entry.total | fmt_float } kr\\
+\BLOCK{ endfor }
+  \hline
+  \multicolumn{4}{c|}{} & Total: & \VAR{ invoice.hours | sum(attribute="total") | fmt_float } kr\\
+  \cline{5-6}
+\end{tabularx}
+\BLOCK{ endif }
+
+\BLOCK{ if invoice.drives }
+\centering \LARGE \textbf{Kjøreliste}\\
+\medskip
+\normalsize
+\begin{tabularx}{\linewidth}{|lXXlll|r|}
+  \hline
+  \textbf{Dato}&
+  \textbf{Fra}&
+  \textbf{Til}&
+  \textbf{Distanse}&
+  \multicolumn{1}{c}{\textbf{À}}&&
+  \multicolumn{1}{c|}{\textbf{Beløp}}\\
+\BLOCK{ for entry in invoice.drives }
+  \hline \VAR{ entry.date } & \VAR{ entry.start } & \VAR{ entry.end } & \VAR{ entry.distance | fmt_float } km & \VAR{ entry.per | fmt_float } kr/km && \VAR{ entry.total | fmt_float } kr\\
+\BLOCK{ endfor }
+  \hline
+  \multicolumn{5}{c|}{} & Total: & \VAR{ invoice.drives | sum(attribute="total") | fmt_float } kr\\
+  \cline{6-7}
+\end{tabularx}
+\BLOCK{ endif }
+
+\BLOCK{ if invoice.expenses }
+\centering \LARGE \textbf{Utlegg}\\
+\medskip
+\normalsize
+\begin{tabularx}{\linewidth}{|lXrrl|r|}
+  \hline
+  \textbf{Dato}&
+  \textbf{Artikkel}&
+  \textbf{Antall}&
+  \multicolumn{1}{c}{\textbf{Enhetspris}}&&
+  \multicolumn{1}{c|}{\textbf{Beløp}}\\
+\BLOCK{ for entry in invoice.expenses }
+  \hline \VAR{ entry.date } & \VAR{ entry.description } & \VAR{ entry.quantity | fmt_float } & \VAR{ entry.per | fmt_float } kr && \VAR{ entry.total | fmt_float } kr\\
+\BLOCK{ endfor }
+  \hline
+  \multicolumn{4}{c|}{} & Total: & \VAR{ invoice.expenses | sum(attribute="total") | fmt_float } kr\\
+  \cline{5-6}
+\end{tabularx}
+\BLOCK{ endif }
+
+\end{document}

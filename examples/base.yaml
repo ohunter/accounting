@@ -1,0 +1,39 @@
+organization:
+  name: 
+  id: 
+  address:
+    street: 
+    area: 
+    country: Norge
+  contact:
+    email: 
+    phone: 
+
+customer:
+  name: 
+  co: 
+  address:
+    street: 
+    area: 
+    country: Norge
+
+invoice:
+  id: 
+  expiry_offset: 10
+  payment_account: 
+  hours:
+    - date: 
+      description: 
+      duration: 
+      per: 
+  driving:
+    - date: 
+      start: 
+      end: 
+      distance: 
+      per: 
+  expenses:
+    - date: 
+      description: 
+      quantity: 
+      per: 
