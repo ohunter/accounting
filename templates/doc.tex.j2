@@ -28,8 +28,8 @@
   Kunde:  & \VAR{ customer.name }                & Dato:         & \VAR{ invoice.date } \\
           & V/ \VAR{ customer.co }               & Forfallsdato: & \VAR{ invoice.date + invoice.expiry_offset } \\
           & \VAR{ customer.address.street }      & Faktura:      & \VAR{ invoice.id } \\
-          & \VAR{ organization.address.area }    & Konto:        & \VAR{ invoice.payment_account } \\
-          & \VAR{ organization.address.country } \\
+          & \VAR{ customer.address.area }    & Konto:        & \VAR{ invoice.payment_account } \\
+          & \VAR{ customer.address.country } \\
 \end{tabularx}
 
 \centering \LARGE \textbf{Oversikt}\\
