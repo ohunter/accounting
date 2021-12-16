@@ -14,31 +14,42 @@ except ImportError:
     from yaml import Loader as Loader
 
 from filters import fmt_float, fmt_duration
-from model import invoice, organization
+from model import invoice as invoice_c, organization, desc_dict
 
 
-def process(description: dict) -> tuple[organization, list[invoice]]:
-    org = organization(**description["organization"])
+def process(description: desc_dict) -> tuple[organization, list[invoice_c]]:
+    org_ = organization(**description["organization"])
 
-    invoices = [invoice(**invoice_dict) for invoice_dict in description["invoices"]]
+    invoices = [
+        invoice_c(**invoice_dict) for invoice_dict in description["invoices"]
+    ]
 
-    pprint(org)
+    pprint(org_)
     pprint(invoices)
 
-    return org, invoices
+    return org_, invoices
 
-def latex(template: jinja2.Template, org: organization, invoice: invoice, output_path: Path):
+
+def latex(template: jinja2.Template, org: organization, invoice: invoice_c,
+          output_path: Path):
     temp_dir = Path(tempfile.gettempdir())
     temp_file = temp_dir / f"{invoice.date}_{invoice.id}_{invoice.customer.name.split()[0]}.tex"
     temp_file.write_text(
-        template.render(organization = org, invoice = invoice, customer = invoice.customer)
-    )
+        template.render(organization=org,
+                        invoice=invoice,
+                        customer=invoice.customer))
 
-    subprocess.run(["pdflatex", "-interaction=batchmode", "-output-directory", str(output_path), str(temp_file)])
+    subprocess.run([
+        "pdflatex", "-interaction=batchmode", "-output-directory",
+        str(output_path),
+        str(temp_file)
+    ])
 
 
-def html(template: jinja2.Template, org: organization, invoice: invoice, output_path: Path):
+def html(template: jinja2.Template, org: organization, invoice: invoice_c,
+         output_path: Path):
     pass
+
 
 def cleanup(output_path: Path):
     auxs = output_path.glob("*.aux")
@@ -47,12 +58,14 @@ def cleanup(output_path: Path):
     for file in it.chain(auxs, logs):
         file.unlink()
 
+
 def parse_args():
     aparser = argparse.ArgumentParser()
 
     aparser.add_argument("files",
                          type=Path,
-                         nargs="+",metavar="FILE",
+                         nargs="+",
+                         metavar="FILE",
                          help="The invoice description")
     aparser.add_argument("-f",
                          "--formatting",
@@ -71,31 +84,33 @@ def parse_args():
                          type=Path,
                          default=Path(".").resolve(),
                          help="The output directory for the PDF")
-    aparser.add_argument("--template-path",
-                         type=Path,
-                         default=Path("./templates").resolve(),
-                         help="The path to the templates used to rended the invoices")
+    aparser.add_argument(
+        "--template-path",
+        type=Path,
+        default=Path("./templates").resolve(),
+        help="The path to the templates used to rended the invoices")
 
     return aparser.parse_args()
+
 
 if __name__ == "__main__":
     parsed_args = parse_args()
 
-    jenv = jinja2.Environment(
-        block_start_string = '\BLOCK{',
-        block_end_string = '}',
-        variable_start_string = '\VAR{',
-        variable_end_string = '}',
-        trim_blocks = True,
-        autoescape = False,
-        loader=jinja2.FileSystemLoader(parsed_args.template_path)
-    )
+    jenv = jinja2.Environment(block_start_string='\BLOCK{',
+                              block_end_string='}',
+                              variable_start_string='\VAR{',
+                              variable_end_string='}',
+                              trim_blocks=True,
+                              autoescape=False,
+                              loader=jinja2.FileSystemLoader(
+                                  parsed_args.template_path))
 
     jenv.filters["fmt_float"] = fmt_float
     jenv.filters["fmt_duration"] = fmt_duration
 
     files = [
-        process(yaml.load(file.read_text(), Loader=Loader)) for file in parsed_args.files
+        process(yaml.load(file.read_text(), Loader=Loader))
+        for file in parsed_args.files
     ]
 
     match parsed_args.formatting:
