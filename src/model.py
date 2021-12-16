@@ -118,17 +118,17 @@ class invoice():
         
         if hours is not None:
             self.hours = tuple(
-                hour_ if isinstance(hour, hour_) else hour_(**hour) for hour in hours
+                sorted((hour_ if isinstance(hour, hour_) else hour_(**hour) for hour in hours), key=lambda x: x.date)
             )
         
         if drives is not None:
             self.drives = tuple(
-                drive_ if isinstance(drive, drive_) else drive_(**drive) for drive in drives
+                sorted((drive_ if isinstance(drive, drive_) else drive_(**drive) for drive in drives), key=lambda x: x.date)
             )
         
         if expenses is not None:
             self.expenses = tuple(
-                expense_ if isinstance(expense, expense_) else expense_(**expense) for expense in expenses
+                sorted((expense_ if isinstance(expense, expense_) else expense_(**expense) for expense in expenses), key=lambda x: x.date)
             )
 
     @property
