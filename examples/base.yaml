@@ -9,31 +9,31 @@ organization:
     email: 
     phone: 
 
-customer:
-  name: 
-  co: 
-  address:
-    street: 
-    area: 
-    country: Norge
-
-invoice:
-  id: 
-  expiry_offset: 10
-  payment_account: 
-  hours:
-    - date: 
-      description: 
-      duration: 
-      per: 
-  driving:
-    - date: 
-      start: 
-      end: 
-      distance: 
-      per: 
-  expenses:
-    - date: 
-      description: 
-      quantity: 
-      per: 
+invoices:
+  - customer:
+      name: 
+      co: 
+      address:
+        street: 
+        area: 
+        country: Norge
+    id: 
+    date: 
+    expiry_offset: 10
+    payment_account: 
+    hours:
+      - date: 
+        description: 
+        duration: 
+        per: 
+    drives:
+      - date: 
+        start: 
+        end: 
+        distance: 
+        per: 
+    expenses:
+      - date: 
+        description: 
+        quantity: 
+        per: 

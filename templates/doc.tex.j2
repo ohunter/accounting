@@ -43,9 +43,8 @@
 \BLOCK{ for entry in invoice.summaries }
 \BLOCK{   if entry.type == "HOUR" }
   \hline \VAR{ entry.description } & \VAR{ entry.quantity | fmt_duration } & \VAR{ entry.unit } && \VAR{ entry.total | fmt_float } kr\\
-\BLOCK{   elif entry.type == "DRIVE" }
+\BLOCK{   else }
   \hline \VAR{ entry.description } & \VAR{ entry.quantity | fmt_float } & \VAR{ entry.unit } && \VAR{ entry.total | fmt_float } kr\\
-\BLOCK{   elif entry.type == "EXPENSE" }
 \BLOCK{   endif }
 \BLOCK{ endfor }
   \hline
