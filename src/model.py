@@ -141,13 +141,13 @@ class summary:
     total: float
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class contact_info_:
     email: str
     phone: str
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class address_:
     street: str
     area: str
@@ -270,7 +270,7 @@ class invoice:
         return sum(x.total for x in self.summaries)
 
 
-@dataclass(init=False)
+@dataclass(init=False, unsafe_hash=True)
 class organization:
     name: str
     id: str

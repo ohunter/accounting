@@ -1,129 +1,84 @@
-import argparse
-import itertools as it
-import subprocess
-import tempfile
+from datetime import timedelta
+import pdb
+from collections import defaultdict
 from pathlib import Path
+from typing import Mapping
 from pprint import pprint
 
 import jinja2
-import yaml
+import typer
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader as Loader
+from model import summary
+from filters import fmt_duration, fmt_float
+from invoice import cleanup_html, cleanup_latex, html, latex
+from typer_options import Format, Language, process_files
 
-from filters import fmt_float, fmt_duration
-from model import invoice as invoice_c, organization, desc_dict
+app = typer.Typer()
 
+@app.command("invoice")
+def gen_invoice(
+    formatting: Format = typer.Option(Format.latex, "-f", case_sensitive=False, help="The output format for the generated invoices"),
+    language: Language = typer.Option(Language.no, '-l', case_sensitive=False, help="The language used by the generated invoices"),
+    output: Path = typer.Option(..., "--output", "-o"),
+    template_path: Path = typer.Option(..., "--template-path", "-t"),
+    files: list[Path] = typer.Argument(...)
+):
 
-def process(description: desc_dict) -> tuple[organization, list[invoice_c]]:
-    org_ = organization(**description["organization"])
-
-    invoices = [
-        invoice_c(**invoice_dict) for invoice_dict in description["invoices"]
-    ]
-
-    pprint(org_)
-    pprint(invoices)
-
-    return org_, invoices
-
-
-def latex(template: jinja2.Template, org: organization, invoice: invoice_c,
-          output_path: Path):
-    temp_dir = Path(tempfile.gettempdir())
-    temp_file = temp_dir / f"{invoice.date}_{invoice.id}_{invoice.customer.name.split()[0]}.tex"
-    temp_file.write_text(
-        template.render(organization=org,
-                        invoice=invoice,
-                        customer=invoice.customer))
-
-    subprocess.run([
-        "pdflatex", "-interaction=batchmode", "-output-directory",
-        str(output_path),
-        str(temp_file)
-    ])
-
-
-def html(template: jinja2.Template, org: organization, invoice: invoice_c,
-         output_path: Path):
-    pass
-
-
-def cleanup(output_path: Path):
-    auxs = output_path.glob("*.aux")
-    logs = output_path.glob("*.log")
-
-    for file in it.chain(auxs, logs):
-        file.unlink()
-
-
-def parse_args():
-    aparser = argparse.ArgumentParser()
-
-    aparser.add_argument("files",
-                         type=Path,
-                         nargs="+",
-                         metavar="FILE",
-                         help="The invoice description")
-    aparser.add_argument("-f",
-                         "--formatting",
-                         type=str,
-                         choices=["latex", "html"],
-                         required=True,
-                         help="The output format of the invoice")
-    aparser.add_argument("-l",
-                         "--language",
-                         type=str,
-                         choices=["no", "en"],
-                         default="en",
-                         help="The language used in the outputted invoice")
-    aparser.add_argument("-o",
-                         "--output",
-                         type=Path,
-                         default=Path(".").resolve(),
-                         help="The output directory for the PDF")
-    aparser.add_argument(
-        "--template-path",
-        type=Path,
-        default=Path("./templates").resolve(),
-        help="The path to the templates used to rended the invoices")
-
-    return aparser.parse_args()
-
-
-if __name__ == "__main__":
-    parsed_args = parse_args()
-
-    jenv = jinja2.Environment(block_start_string='\BLOCK{',
+    jenv = jinja2.Environment(block_start_string='\\BLOCK{',
                               block_end_string='}',
-                              variable_start_string='\VAR{',
+                              variable_start_string='\\VAR{',
                               variable_end_string='}',
                               trim_blocks=True,
                               autoescape=False,
-                              loader=jinja2.FileSystemLoader(
-                                  parsed_args.template_path))
+                              loader=jinja2.FileSystemLoader(template_path))
 
-    jenv.filters["fmt_float"] = fmt_float
-    jenv.filters["fmt_duration"] = fmt_duration
+    assert getattr(jenv, "filters") and isinstance(getattr(jenv, "filters"), Mapping)
+    getattr(jenv, "filters")["fmt_float"] = fmt_float
+    getattr(jenv, "filters")["fmt_duration"] = fmt_duration
 
-    files = [
-        process(yaml.load(file.read_text(), Loader=Loader))
-        for file in parsed_args.files
-    ]
+    processed = process_files(files)
 
-    match parsed_args.formatting:
-        case "latex":
+    match formatting:
+        case Format.latex:
             template = jenv.get_template("doc.tex.j2")
-            for org, invoices in files:
+            for org, invoices in processed:
                 for invoice in invoices:
-                    latex(template, org, invoice, parsed_args.output)
+                    latex(template, org, invoice, output)
 
-        case "html":
+            cleanup_latex(output)
+        case Format.html:
             template = jenv.get_template("doc.html.j2")
-            for org, invoices in files:
+            for org, invoices in processed:
                 for invoice in invoices:
-                    html(template, org, invoice, parsed_args.output)
+                    html(template, org, invoice, output)
 
-    cleanup(parsed_args.output)
+            cleanup_html(output)
+
+@app.command("summary")
+def gen_summary(files: list[Path] = typer.Argument(...)):
+    processed = process_files(files)
+
+    orgs = defaultdict(lambda: defaultdict(list[summary]))
+
+    # Gather the various invoices per company and separate them by year
+    for org, invoices in processed:
+        for invoice in invoices:
+            orgs[org.name][invoice.date.year].extend(invoice.summaries)
+    
+    # Generate the yearly summary per org
+    summaries = {
+        org: {
+            year: {
+                "Hourly": sum((x.total for x in summaries if x.type == "HOUR")),
+                "Drives": sum((x.total for x in summaries if x.type == "DRIVE")),
+                "Expenses": sum((x.total for x in summaries if x.type == "EXPENSE")),
+            }
+            for year, summaries in years.items()
+        }
+        for org, years in orgs.items()
+    }
+
+    pprint(summaries)
+
+if __name__ == "__main__":
+    app()
