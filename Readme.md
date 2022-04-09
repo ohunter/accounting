@@ -6,4 +6,4 @@
 - jinja2
 - pyyaml
 - typer
-- pdflatex
+- pdflatex (for pdf output)
