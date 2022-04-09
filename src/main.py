@@ -47,6 +47,7 @@ def gen_invoice(
 
             cleanup_latex(output)
         case Format.html:
+            raise NotImplementedError("HTML output is not yet implemented")
             template = jenv.get_template("doc.html.j2")
             for org, invoices in processed:
                 for invoice in invoices:
